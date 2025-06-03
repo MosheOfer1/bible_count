@@ -65,6 +65,8 @@ def extract_text_from_html(file_path):
             paragraphs = soup.find_all('p')
 
             text = []
+            # Before extracting text with the separator, normalize the HTML structure
+            # by joining adjacent text nodes within the paragraph
             for p in paragraphs:
                 # Skip elements with class 'tiny', 'm', or 's' as they are metadata
                 if p.get('class') and any(cls in ['tiny', 'm', 's'] for cls in p.get('class')):
@@ -74,8 +76,16 @@ def extract_text_from_html(file_path):
                 for b_tag in p.find_all('b'):
                     b_tag.decompose()
 
-                # Extract text
-                p_text = p.get_text(separator=' ')
+                # Unwrap big tags
+                for big_tag in p.find_all('big'):
+                    big_tag.unwrap()
+                    
+                # Get the HTML string and re-parse it to normalize text nodes
+                p_html = str(p)
+                normalized_p = BeautifulSoup(p_html, 'html.parser')
+                
+                # Extract text from the normalized structure
+                p_text = normalized_p.get_text(separator=' ')
 
                 # Remove any content inside curly braces {}, including the braces
                 p_text = re.sub(r'\{[^}]*\}', '', p_text)
@@ -94,16 +104,8 @@ def extract_text_from_html(file_path):
 
 def process_full_text(text):
     """Process text for the full version, removing words in parentheses."""
-    # Pattern to find a word followed by parenthetical alternative
-    # Then replace both with just the original word
-    return re.sub(r'(\S+)\s*\([^)]*\)', r'\1', text)
-
-
-def process_hesher_text(text):
-    """Process text for the hesher version, replacing words with their parenthetical alternatives."""
-    # Pattern to find a word followed by parenthetical alternative
-    # Then replace both with just the parenthetical content (without parentheses)
-    return re.sub(r'(\S+)\s*\(([^)]*)\)', r'\2', text)
+    # Pattern to find content in parentheses and remove it
+    return re.sub(r'\([^)]*\)', '', text)
 
 
 def clean_text(text):
@@ -206,7 +208,7 @@ def process_all_files(directory):
     valid_files.sort(key=get_sort_key)
 
     # Create the output files
-    with codecs.open("TextFiles/bible_full.txt", 'w', 'utf-8') as full_file, \
+    with codecs.open("TextFiles/bible_full_v2.txt", 'w', 'utf-8') as full_file, \
             codecs.open("TextFiles/bible_hesher.txt", 'w', 'utf-8') as hesher_file:
 
         for file_path in valid_files:
@@ -223,11 +225,11 @@ def process_all_files(directory):
             full_text = clean_text(full_text)
 
             # Process for the hesher version
-            hesher_text = process_hesher_text(text)
-            hesher_text = clean_text(hesher_text)
+            # hesher_text = process_hesher_text(text)
+            # heshter_text = clean_text(hesher_text)
 
             # Skip writing empty content
-            if not full_text.strip() or not hesher_text.strip():
+            if not full_text.strip():  # or not hesher_text.strip():
                 print(f"Warning: Empty content in {base_name}, skipping...")
                 continue
 
@@ -236,11 +238,11 @@ def process_all_files(directory):
             full_file.write(full_text)
             full_file.write("\n\n")
 
-            hesher_file.write(f"{book_chapter}\n\n")
-            hesher_file.write(hesher_text)
-            hesher_file.write("\n\n")
+            # hesher_file.write(f"{book_chapter}\n\n")
+            # hesher_file.write(hesher_text)
+            # hesher_file.write("\n\n")
 
-    print("Done! Bible text has been extracted to bible_full.txt and bible_hesher.txt")
+    print("Done! Bible text has been extracted to bible_full_v2.txt and bible_hesher.txt")
 
 
 if __name__ == "__main__":

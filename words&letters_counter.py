@@ -113,7 +113,7 @@ def print_parsha_stats_table(hebrew_parts):
 
 if __name__ == "__main__":
     # Get the file path from user input
-    file_path = "TextFiles/תנ'ך עם חלוקת פרקים וסימון פרשיות - על פי מכון ממרא.txt"
+    file_path = "TextFiles/bible_full_v2.txt"
 
     # Find words with ampersand and process them
     original_words, hebrew_parts = find_and_process_ampersand_words(file_path)
