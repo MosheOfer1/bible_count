@@ -100,7 +100,7 @@ def print_letter_stats_table(letter_counts, total_letters):
 
 if __name__ == "__main__":
     # File path for the Bible text
-    file_path = "TextFiles/bible_full_v2.txt"
+    file_path = "TextFiles/bible_full_v2_parshas.txt"
     
     # Count Hebrew letters
     letter_counts, total_letters = count_hebrew_letters(file_path)
